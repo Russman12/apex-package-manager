@@ -2,9 +2,12 @@
   "name": "apex-package-manager",
   "version": "0.0.0",
   "description": "Manages apex packages and dependencies.",
-  "main": "index.js",
+  "main": "bin/apex-package-manager.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "build:watch": "tsc --watch"
   },
   "repository": {
     "type": "git",
@@ -18,10 +21,18 @@
   "homepage": "https://github.com/Russman12/apex-package-manager#readme",
   "devDependencies": {
     "@eslint/js": "^9.0.0",
+    "@types/node": "^20.12.5",
+    "@types/yargs": "^17.0.32",
     "eslint": "^8.57.0",
     "globals": "^15.0.0",
     "prettier": "3.2.5",
     "typescript": "^5.4.4",
     "typescript-eslint": "^7.5.0"
+  },
+  "bin": {
+    "apex-package-manager": "./bin/apex-package-manager.js"
+  },
+  "dependencies": {
+    "commander": "^12.0.0"
   }
 }
