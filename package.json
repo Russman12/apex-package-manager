@@ -1,0 +1,27 @@
+{
+  "name": "apex-package-manager",
+  "version": "0.0.0",
+  "description": "Manages apex packages and dependencies.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Russman12/apex-package-manager.git"
+  },
+  "author": "Russell Laboe",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Russman12/apex-package-manager/issues"
+  },
+  "homepage": "https://github.com/Russman12/apex-package-manager#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^8.57.0",
+    "globals": "^15.0.0",
+    "prettier": "3.2.5",
+    "typescript": "^5.4.4",
+    "typescript-eslint": "^7.5.0"
+  }
+}
