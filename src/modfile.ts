@@ -42,8 +42,7 @@ const load = () => {
   if (!PKG) {
     PKG = new Modules();
     if (fs.existsSync(PKG_PATH)) {
-      const obj = JSON.parse(fs.readFileSync(PKG_PATH).toString());
-      PKG.dependencies = obj.dependencies;
+      PKG.dependencies = JSON.parse(fs.readFileSync(PKG_PATH).toString());
     }
   }
   return PKG;
