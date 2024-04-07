@@ -9,6 +9,9 @@ import { PROJECT_DIR } from "../constants.js";
 import pkg from "../modfile.js";
 
 const MODULES_DIR = path.join(PROJECT_DIR, "sfdx_modules");
+const SEMANTIC_VERSION_RE = new RegExp(
+  `^v?(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$`,
+);
 
 const addCommand = (program: Command) => {
   program
@@ -32,15 +35,14 @@ const handler = (cloneUrl: string, revision: string) => {
   //perform git clone to temp dir
   child_process.execSync(`git clone "${cloneUrl}" "${tempProjectPath}"`);
 
-  if (!revision) {
-    revision = child_process
-      .execSync(`git rev-parse --short HEAD`, { cwd: tempProjectPath })
-      .toString();
-  } else {
+  //revision is provided, check it out
+  if (revision) {
     child_process.execSync(`git reset --hard "${revision}"`, {
       cwd: tempProjectPath,
     });
   }
+  //determine if semantic version tag exists at commit
+  revision = getRevision(revision, tempProjectPath);
 
   //copy archive content apex_modules directory
   const archivePath = path.join(tempDir, `${moduleName}.tar`);
@@ -64,3 +66,26 @@ const handler = (cloneUrl: string, revision: string) => {
   fs.rmSync(tempDir, { recursive: true, force: true });
 };
 export default addCommand;
+
+/**
+ * determine semantic revision tag if one exists at current commit
+ * TODO: fix this with other commands up top
+ */
+const getRevision = (revision = "HEAD", tempProjectPath: string) => {
+  const tags = child_process
+    .execSync(`git tag --points-at ${revision}`, {
+      cwd: tempProjectPath,
+    })
+    .toString()
+    .split("\n");
+
+  const semanticVersion = tags.find((tag) => SEMANTIC_VERSION_RE.test(tag));
+  revision = semanticVersion ? semanticVersion : revision;
+  if (revision === "HEAD") {
+    revision = child_process
+      .execSync(`git rev-parse --short=16 HEAD`, { cwd: tempProjectPath })
+      .toString();
+  }
+
+  return semanticVersion ? semanticVersion : revision;
+};
