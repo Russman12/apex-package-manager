@@ -1,8 +1,8 @@
 {
-  "name": "apex-package-manager",
+  "name": "sfmod",
   "version": "0.0.0",
   "description": "Manages apex packages and dependencies.",
-  "main": "bin/apex-package-manager.js",
+  "main": "bin/sfmod.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -32,7 +32,7 @@
     "typescript-eslint": "^7.5.0"
   },
   "bin": {
-    "apex-package-manager": "./bin/apex-package-manager.js"
+    "sfmod": "./bin/sfmod.js"
   },
   "dependencies": {
     "commander": "^12.0.0",

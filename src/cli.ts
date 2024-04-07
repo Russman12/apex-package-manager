@@ -5,10 +5,8 @@ export const exec = () => {
   const program = new Command();
 
   program
-    .name("apex-package-manager")
-    .description(
-      "manages dependencies on git repositories in the salesforce ecosystem",
-    );
+    .name("sfmod")
+    .description("manages dependencies for a Salesforce project");
 
   install(program);
 
