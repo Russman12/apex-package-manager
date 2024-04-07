@@ -1,9 +1,12 @@
 {
   "name": "sfmod",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Manages apex packages and dependencies.",
   "main": "bin/sfmod.js",
   "type": "module",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
@@ -11,16 +14,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Russman12/apex-package-manager.git"
+    "url": "git+https://github.com/Russman12/sfmod.git"
   },
   "author": "Russell Laboe",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Russman12/apex-package-manager/issues"
+    "url": "https://github.com/Russman12/sfmod/issues"
   },
-  "homepage": "https://github.com/Russman12/apex-package-manager#readme",
+  "homepage": "https://github.com/Russman12/sfmod#readme",
   "devDependencies": {
     "@eslint/js": "^9.0.0",
+    "@semantic-release/git": "^10.0.1",
     "@types/node": "^20.12.5",
     "@types/tar": "^6.1.12",
     "@types/uuid": "^9.0.8",
@@ -28,6 +32,7 @@
     "eslint": "^8.57.0",
     "globals": "^15.0.0",
     "prettier": "3.2.5",
+    "semantic-release": "^23.0.7",
     "typescript": "^5.4.4",
     "typescript-eslint": "^7.5.0"
   },
