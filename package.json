@@ -22,6 +22,8 @@
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "@types/node": "^20.12.5",
+    "@types/tar": "^6.1.12",
+    "@types/uuid": "^9.0.8",
     "@types/yargs": "^17.0.32",
     "eslint": "^8.57.0",
     "globals": "^15.0.0",
@@ -33,6 +35,8 @@
     "apex-package-manager": "./bin/apex-package-manager.js"
   },
   "dependencies": {
-    "commander": "^12.0.0"
+    "commander": "^12.0.0",
+    "tar": "^6.2.1",
+    "uuid": "^9.0.1"
   }
 }
