@@ -21,7 +21,7 @@ const handler = async (cloneUrl: string, revision: string = "HEAD") => {
     }
 
     dep.revision = revision;
-    dep.install(TEMP_DIR);
+    dep.install();
 
     modules.toModfile().write();
   }

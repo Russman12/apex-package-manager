@@ -3,6 +3,7 @@ import { PROJECT_DIR, MODULES_DIR } from "./constants.js";
 import fs from "fs";
 import child_process from "child_process";
 import tar from "tar";
+import { TEMP_DIR } from "./constants.js";
 
 const PKG_NAME = "sfdxmod.json";
 const PKG_PATH = path.join(PROJECT_DIR, PKG_NAME);
@@ -94,12 +95,14 @@ export class Dependency {
   public revision: string;
   public path: string;
   public isInstalled: boolean;
+  private tmpProjectDir: string;
 
   constructor(url: string, revision: string) {
     this.url = url;
     this.revision = revision;
     this.path = path.join(MODULES_DIR, this.name);
     this.isInstalled = fs.existsSync(this.path);
+    this.tmpProjectDir = path.join(TEMP_DIR, this.name);
   }
 
   public get name() {
@@ -113,67 +116,71 @@ export class Dependency {
     return this._name;
   }
 
-  public async install(tmpDir: string) {
-    const tempProjectPath = path.join(tmpDir, this.name);
-
+  public async install() {
     //perform git clone to temp dir
-    child_process.execSync(`git clone "${this.url}" "${tempProjectPath}"`);
+    child_process.execSync(`git clone "${this.url}" "${this.tmpProjectDir}"`);
 
     //revision is provided, check it out
     if (this.revision) {
       child_process.execSync(`git reset --hard "${this.revision}"`, {
-        cwd: tempProjectPath,
+        cwd: this.tmpProjectDir,
       });
     }
-    //determine if semantic version tag exists at commit
-    this.revision = getRevision(this.revision, tempProjectPath);
 
-    //copy archive content apex_modules directory
-    const archivePath = path.join(tmpDir, `${this.name}.tar`);
-    child_process.execSync(`git archive --format=tar -o ${archivePath} HEAD`, {
-      cwd: tempProjectPath,
-    });
+    //set revision
+    this.revision = this.getRevision();
 
-    const modulePath = path.join(MODULES_DIR, this.name);
-    if (fs.existsSync(modulePath)) {
-      fs.rmSync(modulePath, { recursive: true, force: true });
-    }
-    fs.mkdirSync(modulePath, { recursive: true });
-    tar.extract({ file: archivePath, cwd: modulePath, sync: true });
-
-    //delete temp project dir
-    fs.rmSync(tempProjectPath, { recursive: true, force: true });
+    //copy archive content modules directory
+    this.copyToProject();
 
     console.log(`installed ${this.name}@${this.revision}`);
+  }
+
+  /**
+   * Returns semantic version tag of current commit if exists, else returns the commit sha
+   * @returns git revision
+   */
+  private getRevision(): string {
+    const semanticVersion = child_process
+      .execSync(`git tag --points-at HEAD`, {
+        cwd: this.tmpProjectDir,
+      })
+      .toString()
+      .trim()
+      .split("\n")
+      .find((tag) => SEMANTIC_VERSION_RE.test(tag));
+    if (semanticVersion) {
+      return semanticVersion;
+    }
+    return child_process
+      .execSync(`git rev-parse --short=16 HEAD`, { cwd: this.tmpProjectDir })
+      .toString()
+      .trim();
+  }
+
+  /**
+   * Archives project at given directory and copies content to project modules
+   */
+  private copyToProject() {
+    const archivePath = path.join(TEMP_DIR, `${this.name}.tar`);
+    child_process.execSync(`git archive --format=tar -o ${archivePath} HEAD`, {
+      cwd: this.tmpProjectDir,
+    });
+
+    if (fs.existsSync(this.path)) {
+      fs.rmSync(this.path, { recursive: true, force: true });
+    }
+    fs.mkdirSync(this.path, { recursive: true });
+    tar.extract({ file: archivePath, cwd: this.path, sync: true });
+
+    //delete temp project dir
+    fs.rmSync(this.tmpProjectDir, { recursive: true, force: true });
   }
 
   public modFileEntryValue() {
     return `${this.url} ${this.revision}`;
   }
 }
-
-/**
- * determine semantic revision tag if one exists at current commit
- * TODO: fix this with other commands up top
- */
-const getRevision = (revision: string, tempProjectPath: string) => {
-  const tags = child_process
-    .execSync(`git tag --points-at ${revision}`, {
-      cwd: tempProjectPath,
-    })
-    .toString()
-    .trim()
-    .split("\n");
-
-  const semanticVersion = tags.find((tag) => SEMANTIC_VERSION_RE.test(tag));
-  revision = semanticVersion ? semanticVersion : revision;
-  revision = child_process
-    .execSync(`git rev-parse --short=16 HEAD`, { cwd: tempProjectPath })
-    .toString()
-    .trim();
-
-  return semanticVersion ? semanticVersion : revision;
-};
 
 let MOD: Modules;
 const load = () => {

@@ -24,7 +24,7 @@ const handler = async (cloneUrl: string, revision: string = "HEAD") => {
       return;
     }
 
-    await dep.install(TEMP_DIR);
+    await dep.install();
 
     //update apex-package.json with installed dependancy version
     modules.addDependancy(dep);
@@ -32,7 +32,7 @@ const handler = async (cloneUrl: string, revision: string = "HEAD") => {
     //determine mods not installed
     const missingDeps = modules.direct.filter((dep) => !dep.isInstalled);
 
-    await Promise.all(missingDeps.map((dep) => dep.install(TEMP_DIR)));
+    await Promise.all(missingDeps.map((dep) => dep.install()));
     console.log("done");
   }
 
