@@ -36,7 +36,20 @@ class Modules {
   }
 
   /**
-   * writes modfile to disk
+   * Returns Dependency from direct and indirect. Returns undefined if not found.
+   * @param cloneUrl clone url to find
+   * @returns Dependency found, otherwise undefined
+   */
+  public find(cloneUrl: string): Dependency | undefined {
+    let d;
+    d = this.direct.find((dep) => dep.url === cloneUrl);
+
+    return d ? d : this.indirect.find((dep) => dep.url === cloneUrl);
+  }
+
+  /**
+   * Returns modfile form of this
+   * @returns ModFile
    */
   toModfile() {
     const modfile = new ModFile();
@@ -49,6 +62,10 @@ class Modules {
     return modfile;
   }
 
+  /**
+   * Returns Modules from ModFile
+   * @returns Modules
+   */
   static fromModfile(modfile: ModFile) {
     const mods = new Modules();
 
@@ -96,7 +113,7 @@ export class Dependency {
     return this._name;
   }
 
-  async install(tmpDir: string) {
+  public async install(tmpDir: string) {
     const tempProjectPath = path.join(tmpDir, this.name);
 
     //perform git clone to temp dir
@@ -126,6 +143,8 @@ export class Dependency {
 
     //delete temp project dir
     fs.rmSync(tempProjectPath, { recursive: true, force: true });
+
+    console.log(`installed ${this.name}@${this.revision}`);
   }
 
   public modFileEntryValue() {
@@ -137,7 +156,7 @@ export class Dependency {
  * determine semantic revision tag if one exists at current commit
  * TODO: fix this with other commands up top
  */
-const getRevision = (revision = "HEAD", tempProjectPath: string) => {
+const getRevision = (revision: string, tempProjectPath: string) => {
   const tags = child_process
     .execSync(`git tag --points-at ${revision}`, {
       cwd: tempProjectPath,
@@ -148,12 +167,10 @@ const getRevision = (revision = "HEAD", tempProjectPath: string) => {
 
   const semanticVersion = tags.find((tag) => SEMANTIC_VERSION_RE.test(tag));
   revision = semanticVersion ? semanticVersion : revision;
-  if (revision === "HEAD") {
-    revision = child_process
-      .execSync(`git rev-parse --short=16 HEAD`, { cwd: tempProjectPath })
-      .toString()
-      .trim();
-  }
+  revision = child_process
+    .execSync(`git rev-parse --short=16 HEAD`, { cwd: tempProjectPath })
+    .toString()
+    .trim();
 
   return semanticVersion ? semanticVersion : revision;
 };
