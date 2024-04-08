@@ -20,7 +20,7 @@ const handler = async (cloneUrl: string, revision: string = "HEAD") => {
     }
 
     dep.revision = revision;
-    dep.install();
+    await dep.install();
 
     modules.toModfile().write();
   } else {

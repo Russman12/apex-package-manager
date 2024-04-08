@@ -1,9 +1,8 @@
 import path from "path";
-import { PROJECT_DIR, MODULES_DIR } from "./constants.js";
+import { MODULES_DIR, PROJECT_DIR, TEMP_DIR } from "./constants.js";
 import fs from "fs";
 import child_process from "child_process";
 import tar from "tar";
-import { TEMP_DIR } from "./constants.js";
 
 const PKG_NAME = "sfdxmod.json";
 const PKG_PATH = path.join(PROJECT_DIR, PKG_NAME);
@@ -17,8 +16,8 @@ class Modules {
   indirect: Dependency[];
 
   constructor() {
-    this.direct = new Array();
-    this.indirect = new Array();
+    this.direct = [];
+    this.indirect = [];
   }
 
   /**
@@ -96,7 +95,7 @@ export class Dependency {
   public revision: string;
   public path: string;
   public isInstalled: boolean;
-  private tmpProjectDir: string;
+  private readonly tmpProjectDir: string;
 
   constructor(url: string, revision: string) {
     this.url = url;
@@ -108,11 +107,10 @@ export class Dependency {
 
   public get name() {
     if (!this._name) {
-      const moduleName = this.url.substring(
+      this._name = this.url.substring(
         this.url.lastIndexOf("/") + 1,
         this.url.lastIndexOf(".git"),
       );
-      this._name = moduleName;
     }
     return this._name;
   }
@@ -128,7 +126,7 @@ export class Dependency {
     if (latestSHA !== this.revision) {
       this.revision = latestSHA;
       console.log(`updating module: ${this.name}@${this.revision}`);
-      this.install();
+      await this.install();
     }
   }
 
@@ -223,7 +221,7 @@ class ModFile {
     this.indirect = {};
   }
 
-  write() {
+  write(): void {
     fs.writeFileSync(PKG_PATH, JSON.stringify(this, emptyKeyReplacer, 2));
   }
 }
