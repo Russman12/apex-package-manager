@@ -1,6 +1,5 @@
 import { Command } from "commander";
 import modules from "../modfile.js";
-import { TEMP_DIR } from "../constants.js";
 
 const exec = (program: Command) => {
   program
@@ -24,5 +23,11 @@ const handler = async (cloneUrl: string, revision: string = "HEAD") => {
     dep.install();
 
     modules.toModfile().write();
+  } else {
+    //determine mods that need updating
+    await Promise.all(modules.direct.map((dep) => dep.update()));
+    modules.toModfile().write();
   }
+
+  console.log("done");
 };

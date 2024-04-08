@@ -10,6 +10,7 @@ const PKG_PATH = path.join(PROJECT_DIR, PKG_NAME);
 const SEMANTIC_VERSION_RE = new RegExp(
   `^v?(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$`,
 );
+const COMMIT_SHA_LEN = 16;
 
 class Modules {
   direct: Dependency[];
@@ -116,6 +117,21 @@ export class Dependency {
     return this._name;
   }
 
+  public async update() {
+    //determine if latest version matches revision
+    const latestSHA = child_process
+      .execSync(`git ls-remote ${this.url} HEAD"`)
+      .toString()
+      .trim()
+      .slice(0, COMMIT_SHA_LEN);
+
+    if (latestSHA !== this.revision) {
+      this.revision = latestSHA;
+      console.log(`updating module: ${this.name}@${this.revision}`);
+      this.install();
+    }
+  }
+
   public async install() {
     //perform git clone to temp dir
     child_process.execSync(`git clone "${this.url}" "${this.tmpProjectDir}"`);
@@ -153,7 +169,9 @@ export class Dependency {
       return semanticVersion;
     }
     return child_process
-      .execSync(`git rev-parse --short=16 HEAD`, { cwd: this.tmpProjectDir })
+      .execSync(`git rev-parse --short=${COMMIT_SHA_LEN} HEAD`, {
+        cwd: this.tmpProjectDir,
+      })
       .toString()
       .trim();
   }
